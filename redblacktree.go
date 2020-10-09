@@ -2,6 +2,7 @@ package redblacktree
 
 import (
 	"fmt"
+	"encoding/json"
 )
 
 type colorType byte
@@ -699,4 +700,27 @@ func (iterator *Iterator) First() bool {
 func (iterator *Iterator) Last() bool {
 	iterator.End()
 	return iterator.Prev()
+}
+
+// ToJSON outputs the JSON representation of the tree.
+func (tree *Tree) ToJSON() ([]byte, error) {
+	elements := make(map[string]interface{})
+	it := tree.Iterator()
+	for it.Next() {
+		elements[it.Key().(string)] = it.Value()
+	}
+	return json.Marshal(&elements)
+}
+
+// FromJSON populates the tree from the input JSON representation.
+func (tree *Tree) FromJSON(data []byte) error {
+	elements := make(map[string]interface{})
+	err := json.Unmarshal(data, &elements)
+	if err == nil {
+		tree.Clear()
+		for key, value := range elements {
+			tree.Put(key, value)
+		}
+	}
+	return err
 }
